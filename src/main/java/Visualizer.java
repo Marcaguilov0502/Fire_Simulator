@@ -1,5 +1,6 @@
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
@@ -17,10 +18,23 @@ public class Visualizer extends Canvas {
         this.height = image.getHeight();
     }
 
-    public void update() {
+    public void draw(Graphics g) {
+
         image.update();
-        Graphics g = this.getGraphics();
         g.drawImage(image.buffer(),0,0,this);
+
+    }
+
+    public void update() {
+        BufferStrategy bs = getBufferStrategy();
+        if (bs == null) {
+            createBufferStrategy(2);
+            return;
+        }
+        Graphics g = bs.getDrawGraphics();
+        draw(g);
+        g.dispose();
+        bs.show();
     }
 
 }

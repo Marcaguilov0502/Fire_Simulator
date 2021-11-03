@@ -17,11 +17,14 @@ public class Main {
         Window window = new Window("FIRE SIMULATOR");
 
         Fire fire = new Fire(w,h,true, false);
-        fire.setPalette(new Palette(PreparedPalettes.FIRE));
+        fire.setPalette(new Palette(PreparedPalettes.FIRE_OPAQUE));
         if (fire.getCoolingMap() != null) {
             window.generateVisualizer(fire.getCoolingMap());
         }
         window.generateVisualizer(fire);
+
+        //FluidFire ff = new FluidFire(w,h);
+        //window.generateVisualizer(ff);
 
 
         window.launch();

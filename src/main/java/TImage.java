@@ -4,12 +4,12 @@ public abstract class TImage {
 
     //Parameters
 
-    public int speed = 4;
+    public int speed = 3;
     public float ignitionDensity = 10f;
     public float coolingPower = 4f;
-    public float igniterMaxSize = 20f;
+    public float igniterMaxSize = 30f;
     public float igniterSpeed = 20f;
-    public int igniterCount = 3;
+    public int igniterCount = 120;
 
 
     //Attributes
@@ -53,8 +53,8 @@ public abstract class TImage {
     public void blur() {
         for (int x = 0; x < height; x++) {
             for (int y = 0; y < width; y++) {
-                int count = 0;
-                int total = 0;
+                int count = 1;
+                int total = pixels[x][y];
                 if (x > 0) {total += pixels[x-1][y]; count++;}
                 if (x < height-1) {total += pixels[x+1][y]; count++;}
                 if (y > 0) {total += pixels[x][y-1]; count++;}
