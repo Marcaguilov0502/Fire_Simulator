@@ -24,7 +24,7 @@ public class Igniter {
 
 
     public void attractToCenter(float speed) {
-        float center = (pixels.length/2);
+        float center = (pixels.length/2f);
         for (int i = 0; i < ignitions.length; i++) {
             float relativeDistanceFromCenter = (((ignitions[i][0] - center)/center));
             ignitions[i][0] -= relativeDistanceFromCenter*((new Random().nextFloat())*(speed/90f));

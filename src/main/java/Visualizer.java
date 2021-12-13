@@ -1,27 +1,20 @@
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
-import java.io.File;
-import java.io.IOException;
+
+import static java.lang.Thread.sleep;
 
 public class Visualizer extends Canvas {
 
     private TImage image;
-    private int width, height;
 
     public Visualizer(TImage image) {
         this.image = image;
-        this.width = image.getWidth();
-        this.height = image.getHeight();
     }
 
     public void draw(Graphics g) {
 
         image.update();
-        g.drawImage(image.buffer(),0,0,this);
+        g.drawImage(image,0,0,this);
 
     }
 
@@ -35,6 +28,11 @@ public class Visualizer extends Canvas {
         draw(g);
         g.dispose();
         bs.show();
+        try {
+            sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }

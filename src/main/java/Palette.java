@@ -1,3 +1,6 @@
+import java.awt.*;
+import java.util.ArrayList;
+
 public class Palette {
 
 
@@ -79,6 +82,15 @@ public class Palette {
         generatePaletteGradient();
     }
 
+    public Palette(ArrayList<Color> colorList) {
+        colors = new int[256];
+        baseColors = new int[colorList.size()];
+        for (int i = 0; i < colorList.size(); i++) {
+            baseColors[i] = getColor(colorList.get(i));
+        }
+        generatePaletteGradient();
+    }
+
 
     //Methods
 
@@ -127,6 +139,19 @@ public class Palette {
         return argb;
     }
 
+    public ArrayList<Color> getBaseColors() {
+        ArrayList<Color> colors = new ArrayList();
+
+        for (int i : baseColors) {
+            int r = getARGB(i)[1];
+            int g = getARGB(i)[2];
+            int b = getARGB(i)[3];
+            colors.add(new Color(r,g,b));
+        }
+
+        return colors;
+    }
+
     public int getColor(int r, int g, int b) {
         int p = (255 << 24) | (r << 16) | (g << 8) | b;
         return p;
@@ -139,6 +164,18 @@ public class Palette {
 
     public int getColor(int temperature) {
         return colors[temperature];
+    }
+
+    public int getColor(Color c) {
+        return getColor(c.getAlpha(),c.getRed(),c.getGreen(),c.getBlue());
+    }
+
+    public Color getColorObject(int temperature) {
+        int c = colors[temperature];
+        int r = getARGB(c)[1];
+        int g = getARGB(c)[2];
+        int b = getARGB(c)[3];
+        return new Color(r, g, b);
     }
 
     public void generatePaletteGradient() {

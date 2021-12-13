@@ -13,25 +13,25 @@ public class Main {
     public static void main(String[] args) throws InterruptedException, IOException {
 
         int w = 500, h = 500;
-
         Window window = new Window("FIRE SIMULATOR");
+        Fire fire = new Fire(w,h);
 
-        Fire fire = new Fire(w,h,true, false);
-        fire.setPalette(new Palette(PreparedPalettes.FIRE_OPAQUE));
+        runFire(window,fire);
+
+    }
+
+    public static void runFire(Window window, Fire fire) throws InterruptedException, IOException {
+    fire.setPalette(new Palette(PreparedPalettes.FIRE_OPAQUE));
         if (fire.getCoolingMap() != null) {
-            window.generateVisualizer(fire.getCoolingMap());
+            window.generateVisualizer((CoolingMap) fire.getCoolingMap());
         }
         window.generateVisualizer(fire);
-
-        //FluidFire ff = new FluidFire(w,h);
-        //window.generateVisualizer(ff);
-
 
         window.launch();
 
         while (true) {
             window.update();
-            //sleep(10);
+            sleep(10);
         }
     }
 

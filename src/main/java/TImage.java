@@ -1,15 +1,15 @@
 import java.awt.image.BufferedImage;
 
-public abstract class TImage {
+public abstract class TImage extends BufferedImage {
 
     //Parameters
 
-    public int speed = 3;
-    public float ignitionDensity = 10f;
-    public float coolingPower = 4f;
-    public float igniterMaxSize = 30f;
-    public float igniterSpeed = 20f;
-    public int igniterCount = 120;
+    protected int speed = 5;
+    protected float ignitionDensity = 10f;
+    protected float coolingPower = 4f;
+    protected float igniterMaxSize = 30f;
+    protected float igniterSpeed = 40f;
+    protected int igniterCount = 120;
 
 
     //Attributes
@@ -23,12 +23,23 @@ public abstract class TImage {
     //Constructor
 
 
+
     public TImage(int width, int height) {
+        super(width, height, TYPE_INT_ARGB);
         this.width = width;
         this.height = height;
         this.pixels = new int[height][width];
         palette = new Palette(PreparedPalettes.GRAY_SCALE);
     }
+
+    public TImage(int width, int height, int imgWidth, int imgHeight) {
+        super(imgWidth, imgHeight, TYPE_INT_ARGB);
+        this.width = width;
+        this.height = height;
+        this.pixels = new int[height][width];
+        palette = new Palette(PreparedPalettes.GRAY_SCALE);
+    }
+
 
 
     //Getters & Setters
@@ -65,14 +76,12 @@ public abstract class TImage {
         }
     }
 
-    public BufferedImage buffer() {
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    public void updateImage() {
         for (int x = 0; x < height; x++) {
             for (int y = 0; y < width; y++) {
-                img.setRGB(y,x,palette.getColor(pixels[x][y]));
+                setRGB(y,x,palette.getColor(pixels[x][y]));
             }
         }
-        return img;
     }
 
     public void moveUp(int speed) {
