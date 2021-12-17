@@ -2,21 +2,18 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class CoolingMap extends TImage {
 
-
-    public static final int FLAT = 0, RANDOM_GENERATED = 1, IMPORTED = 2;
-    public String[] paths = new String[]{"CoolingMap1.png", "CoolingMap2.png", "CoolingMap3.png"};
-
+    boolean paused = false;
 
     //Constructors
 
 
-    public CoolingMap(int width, int height) {
+    public CoolingMap(int width, int height, Configuration config) {
         super(width, height);
+        this.config = config;
         generateNoisyCoolingMap(10, 7);
     }
 
@@ -26,7 +23,10 @@ public class CoolingMap extends TImage {
 
     @Override
     public void update() {
-        moveUp(speed);
+        if (paused) {
+            return;
+        }
+        moveUp(config.getSpeed());
         updateImage();
     }
 
@@ -74,6 +74,34 @@ public class CoolingMap extends TImage {
                 pixels[rx][ry] = 255;
                 points--;
             }
+        }
+    }
+
+    public void updateCoolingType() throws IOException {
+        switch (config.getCoolingType()) {
+            case Configuration.FLAT:
+                config.setUsingCoolingMap(false);
+                importCoolingMap("flat.png");
+                break;
+            case Configuration.RANDOM_GENERATED:
+                config.setUsingCoolingMap(true);
+                generateNoisyCoolingMap(10, 7);
+                break;
+            case Configuration.IMPORTED:
+                config.setUsingCoolingMap(true);
+                updateImportedCoolingMap();
+                break;
+        }
+    }
+
+    public void updateImportedCoolingMap() {
+        try {
+            paused = true;
+            importCoolingMap("coolingMap" + config.getCoolingPath() + ".png");
+            paused = false;
+        } catch (IOException ioException) {
+            config.setCoolingPath(0);
+            updateImportedCoolingMap();
         }
     }
 

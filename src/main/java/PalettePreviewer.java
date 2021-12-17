@@ -10,9 +10,11 @@ public class PalettePreviewer extends Canvas implements Runnable {
 
     private Palette palette;
     private int step = 254;
+    private boolean vertical;
 
-    public PalettePreviewer(Palette palette) {
+    public PalettePreviewer(Palette palette, boolean vertical) {
         this.palette = palette;
+        this.vertical = vertical;
     }
 
     public void setPalette(Palette palette) {
@@ -33,10 +35,17 @@ public class PalettePreviewer extends Canvas implements Runnable {
 
             Graphics g = getGraphics();
             if (g == null) {continue;}
-            g.drawImage(preview(),2,2, (int) (getWidth()*(2f/3f)),getHeight()-4,this);
-            g.setColor(palette.getColorObject(step));
-            g.fillRect((int)(getWidth()*(2f/3f)),2,(int)(getWidth()*(1f/3f))-1,getHeight()-4);
-            g.dispose();
+            if (vertical) {
+                g.drawImage(preview(), 2, 2, (int) (getWidth() * (2f / 3f)), getHeight() - 4, this);
+                g.setColor(palette.getColorObject(step));
+                g.fillRect((int) (getWidth() * (2f / 3f)), 2, (int) (getWidth() * (1f / 3f)) - 1, getHeight() - 4);
+                g.dispose();
+            } else {
+                g.drawImage(preview(), 2, 2, getWidth()-4, (int) (getHeight() * (4f / 5f)), this);
+                g.setColor(palette.getColorObject(step));
+                g.fillRect(2, (int) (getHeight() * (4f / 5f))+2, getWidth() - 4,(int) (getHeight() * (4f / 5f))-1);
+                g.dispose();
+            }
             step = (step <= 0)?255:step-1;
             try {
                 sleep(10);

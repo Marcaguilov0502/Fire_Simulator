@@ -1,16 +1,12 @@
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 
-import static java.lang.Thread.sleep;
-
 public class ControlPanel extends JPanel {
 
-    private Color backgroundColor = new Color(20,20,20);
-    private Fire fire;
+    private final Color backgroundColor = new Color(20,20,20);
+    private final Fire fire;
 
     public ControlPanel(Fire fire) {
         super();
@@ -107,59 +103,48 @@ public class ControlPanel extends JPanel {
 
     private void addListeners() {
 
-        slider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                int oxygen = slider.getValue();
-                fire.setOxygen(oxygen);
+        slider.addChangeListener(e -> {
+            int oxygen = slider.getValue();
+            fire.config.setOxygen(oxygen);
+        });
+
+        igniterType.addActionListener(e -> {
+            fire.config.changeIgniterType();
+            int actualType = fire.config.getIgniterType();
+            if (actualType == Configuration.LINE) {
+                igniterType.setText("Igniter: Line");
+            } else if (actualType == Configuration.RANDOM) {
+                igniterType.setText("Igniter: Random");
+            } else if (actualType == Configuration.MEMORY) {
+                igniterType.setText("Igniter: Memory");
             }
         });
 
-        igniterType.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fire.changeIgniterType();
-                int actualType = fire.getIgniterType();
-                if (actualType == fire.LINE ) {
-                    igniterType.setText("Igniter: Line");;
-                } else if (actualType == fire.RANDOM) {
-                    igniterType.setText("Igniter: Random");
-                } else if (actualType == fire.MEMORY) {
-                    igniterType.setText("Igniter: Memory");
-                }
+        coolingType.addActionListener(e -> {
+            try {
+                fire.changeCoolingType();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+            switch (fire.config.getCoolingType()) {
+                case Configuration.FLAT:
+                    coolingType.setText("Cooling: Flat");
+                    importedCoolingMap.setEnabled(false);
+                    break;
+                case Configuration.RANDOM_GENERATED:
+                    coolingType.setText("Cooling: Random");
+                    break;
+                case Configuration.IMPORTED:
+                    coolingType.setText("Cooling: Imported");
+                    importedCoolingMap.setEnabled(true);
+                    break;
             }
         });
 
-        coolingType.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    fire.changeCoolingType();
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-                switch (fire.getCoolingType()) {
-                    case CoolingMap.FLAT:
-                        coolingType.setText("Cooling: Flat");
-                        importedCoolingMap.setEnabled(false);
-                        break;
-                    case CoolingMap.RANDOM_GENERATED:
-                        coolingType.setText("Cooling: Random");
-                        break;
-                    case CoolingMap.IMPORTED:
-                        coolingType.setText("Cooling: Imported");
-                        importedCoolingMap.setEnabled(true);
-                        break;
-                }
-            }
-        });
-
-        importedCoolingMap.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fire.changeCoolingMap();
-                importedCoolingMap.setText("CoolingMap: " + fire.getCoolingPath());
-            }
+        importedCoolingMap.addActionListener(e -> {
+            fire.config.nextCoolingPath();
+            fire.getCoolingMap().updateImportedCoolingMap();
+            importedCoolingMap.setText("CoolingMap: " + fire.config.getCoolingPath());
         });
 
         palette.addActionListener(new ActionListener() {

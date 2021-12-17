@@ -1,20 +1,15 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 import static java.awt.GridBagConstraints.BOTH;
-import static java.awt.GridBagConstraints.REMAINDER;
 import static java.lang.Thread.sleep;
 
 public class PaletteEditor extends JFrame {
@@ -22,7 +17,7 @@ public class PaletteEditor extends JFrame {
 
     //Attributes
 
-
+    private Color buttonColor = new Color(250,250,250);
     private Fire fire;
     ArrayList<Color> colors = new ArrayList<>();
     private int selectedColorSlot;
@@ -33,7 +28,8 @@ public class PaletteEditor extends JFrame {
     public PaletteEditor(Fire fire) {
         super("Palette editor");
         this.fire = fire;
-        previewer = new PalettePreviewer(fire.getPalette());
+        paletteChooser = new PaletteChooser(fire);
+        previewer = new PalettePreviewer(fire.getPalette(),false);
         this.setLayout(new GridBagLayout());
         addComponents();
         addListeners();
@@ -49,6 +45,7 @@ public class PaletteEditor extends JFrame {
 
     private PalettePreviewer previewer;
     private JColorChooser colorChooser = new JColorChooser();
+    private PaletteChooser paletteChooser;
 
     private JButton addColor = new JButton("Add Color");
     private JButton removeColor = new JButton("Remove Color");
@@ -72,27 +69,36 @@ public class PaletteEditor extends JFrame {
         add(buttonsPanel,gbc);
 
         gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.insets = new Insets(43,20,43,10);
-        previewer.setBackground(new Color(150,150,150));
-        add(previewer,gbc);
-
-
-        gbc.insets = new Insets(0,0,0,0);
-        gbc.gridx = 1;
         gbc.gridwidth = 3;
+        gbc.gridheight = 2;
         setupColorChooser();
         add(colorChooser,gbc);
 
-        gbc.gridy = 3;
+        gbc.insets = new Insets(20,10,0,30);
+        gbc.gridx = 3;
         gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        add(paletteChooser,gbc);
+
+        gbc.insets = new Insets(30,10,20,30);
+        gbc.gridy = 2;
+        previewer.setBackground(new Color(150,150,150));
+        add(previewer,gbc);
+
+        gbc.insets = new Insets(0,0,0,0);
+        gbc.gridwidth = 1;
+        gbc.gridy = 3;
         gbc.gridx = 0;
+        addColor.setBackground(buttonColor);
         add(addColor,gbc);
         gbc.gridx++;
+        removeColor.setBackground(buttonColor);
         add(removeColor,gbc);
         gbc.gridx++;
+        apply.setBackground(buttonColor);
         add(apply,gbc);
         gbc.gridx++;
+        cancel.setBackground(buttonColor);
         add(cancel,gbc);
 
     }
@@ -108,7 +114,7 @@ public class PaletteEditor extends JFrame {
 
                 JButton b = createColorButton(Color.white);
                 GridBagConstraints gbc = new GridBagConstraints();
-                gbc.gridx = paletteButtons.size();
+                gbc.gridx = paletteButtons.size()+1;
                 gbc.gridy = 0;
                 gbc.weightx = 1;
                 gbc.weighty = 1;
@@ -135,13 +141,15 @@ public class PaletteEditor extends JFrame {
                 }
                 colors.remove(selectedColorSlot);
                 buttonsPanel.remove(selectedColorSlot);
-                paletteButtons.remove(paletteButtons.get(paletteButtons.size()-1));
+                paletteButtons.remove(paletteButtons.get(selectedColorSlot));
                 update(getGraphics());
                 pack();
 
                 if (selectedColorSlot >= colors.size()) {
                     selectedColorSlot = colors.size()-1;
                     colorChooser.setColor(colors.get(colors.size() - 1));
+                } else {
+                    colorChooser.setColor(colors.get(selectedColorSlot));
                 }
                 updatePreviewer();
             }
@@ -182,6 +190,7 @@ public class PaletteEditor extends JFrame {
     private JButton createColorButton(Color c) {
         JButton b = new JButton();
         setColorIcon(b,c);
+        b.setBackground(buttonColor);
 
         b.addActionListener(new ActionListener() {
             @Override
@@ -213,6 +222,8 @@ public class PaletteEditor extends JFrame {
         colorChooser.removeChooserPanel(colorChooser.getChooserPanels()[1]);
         colorChooser.setPreviewPanel(new JPanel());
         colorChooser.setColor(colors.get(selectedColorSlot));
+        colorChooser.getChooserPanels()[0].getComponent(0).setVisible(false);
+        colorChooser.getChooserPanels()[0].getComponent(0).setEnabled(false);
     }
 
     private void setupPaletteButtons() {
@@ -244,7 +255,9 @@ public class PaletteEditor extends JFrame {
     }
 
     public void updatePreviewer() {
-        previewer.setPalette(new Palette(colors));
+        Palette p = new Palette(colors);
+        previewer.setPalette(p);
+        fire.setPalette(p);
     }
 
 

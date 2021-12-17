@@ -175,7 +175,8 @@ public class Palette {
         int r = getARGB(c)[1];
         int g = getARGB(c)[2];
         int b = getARGB(c)[3];
-        return new Color(r, g, b);
+        int a = getARGB(c)[0];
+        return new Color(r, g, b, a);
     }
 
     public void generatePaletteGradient() {

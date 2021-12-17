@@ -83,12 +83,12 @@ public class Igniter {
             for (int j = 0; j < ignitionLength; j++) {
                 if (ignitions[i][0] - j > 0) {
                     pixels[(int) (ignitions[i][0] - j)] += (int) (ignitions[i][1]*multiplier*(r.nextFloat()+0.5f));
-                    if (pixels[(int) (ignitions[i][0] - j)] > 255) {pixels[(int) (ignitions[i][0] - j)] = 255-r.nextInt(100);}
+                    if (pixels[(int) (ignitions[i][0] - j)] > 255) {pixels[(int) (ignitions[i][0] - j)] = 255-r.nextInt(200);}
                     if (pixels[(int) (ignitions[i][0] - j)] < 0) {pixels[(int) (ignitions[i][0] - j)] = 0;}
                 }
                 if (ignitions[i][0] + j < pixels.length) {
                     pixels[(int) (ignitions[i][0] + j)] += (int) (ignitions[i][1]*multiplier*(r.nextFloat()+0.5f));
-                    if (pixels[(int) (ignitions[i][0] + j)] > 255) {pixels[(int) (ignitions[i][0] + j)] = 255-r.nextInt(100);}
+                    if (pixels[(int) (ignitions[i][0] + j)] > 255) {pixels[(int) (ignitions[i][0] + j)] = 255-r.nextInt(200);}
                     if (pixels[(int) (ignitions[i][0] + j)] < 0) {pixels[(int) (ignitions[i][0] + j)] = 0;}
                 }
                 multiplier -= multiplierDecrement;
