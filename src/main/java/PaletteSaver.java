@@ -51,6 +51,16 @@ public class PaletteSaver extends File {
         return strings;
     }
 
+    public void add(String name, Palette palette) {
+        paletteNames.add(name);
+        palettes.add(palette);
+        try {
+            rewrite();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+    }
+
     public void createJSON() throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(getPath()));
         bw.write("{\n" +
@@ -69,6 +79,39 @@ public class PaletteSaver extends File {
                 "  ]\n" +
                 "}");
         bw.close();
+    }
+
+    public String createPaletteJson(String name, Palette palette) {
+        String s = "    {\n" +
+                "      \"name\":\""+name+"\",\n" +
+                "      \"baseColors\":[\n";
+
+        ArrayList<Color> baseColors = palette.getBaseColors();
+
+        for (int i = 0; i < baseColors.size(); i++) {
+
+            int[] argb = palette.getARGB(palette.getColor(baseColors.get(i)));
+
+            if (i == baseColors.size() - 1) {
+                s = s.concat("        {\"a\":"+argb[0]+",\"r\":"+argb[1]+",\"g\":"+argb[2]+",\"b\":"+argb[3]+"}\n" +
+                         "      ]\n" +
+                         "    }");
+            } else {
+                s = s.concat("        {\"a\":"+argb[0]+",\"r\":"+argb[1]+",\"g\":"+argb[2]+",\"b\":"+argb[3]+"},\n");
+            }
+        }
+        return s;
+    }
+
+
+    public Palette get(String selected) {
+
+        for (int i = 0; i < palettes.size(); i++) {
+            if (paletteNames.get(i).equals(selected)) {
+                return palettes.get(i);
+            }
+        }
+        return null;
     }
 
     public ArrayList<String> getPaletteNames() {
@@ -117,6 +160,29 @@ public class PaletteSaver extends File {
         }
         br.close();
         palettes.add(new Palette(baseColors));
+    }
+
+    public void remove(int index) {
+        paletteNames.remove(index);
+        palettes.remove(index);
+        try {
+            rewrite();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+    }
+
+    public void rewrite() throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(getPath()));
+        bw.write("{\n" +
+                "  \"palettes\":[\n");
+        for (int i = 0; i < palettes.size(); i++) {
+            bw.write(createPaletteJson(paletteNames.get(i), palettes.get(i)));
+            bw.write((i == palettes.size()-1)?"\n":",\n");
+        }
+        bw.write("  ]\n" +
+                "}");
+        bw.close();
     }
 
 }

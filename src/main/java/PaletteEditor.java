@@ -1,24 +1,21 @@
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static java.awt.GridBagConstraints.BOTH;
-import static java.lang.Thread.sleep;
+import static java.awt.GridBagConstraints.RELATIVE;
 
 public class PaletteEditor extends JFrame {
 
 
     //Attributes
 
-    private Color buttonColor = new Color(250,250,250);
-    private Fire fire;
+    private final Color buttonColor = new Color(250,250,250);
+    private final Fire fire;
+    private final Palette originalPalette;
     ArrayList<Color> colors = new ArrayList<>();
     private int selectedColorSlot;
 
@@ -28,6 +25,7 @@ public class PaletteEditor extends JFrame {
     public PaletteEditor(Fire fire) {
         super("Palette editor");
         this.fire = fire;
+        originalPalette = fire.getPalette();
         paletteChooser = new PaletteChooser(fire);
         previewer = new PalettePreviewer(fire.getPalette(),false);
         this.setLayout(new GridBagLayout());
@@ -40,17 +38,18 @@ public class PaletteEditor extends JFrame {
     //Components
 
 
-    private ArrayList<JButton> paletteButtons = new ArrayList<>();
-    private JPanel buttonsPanel = new JPanel();
+    private final ArrayList<JButton> paletteButtons = new ArrayList<>();
+    private final JPanel buttonsPanel = new JPanel();
 
-    private PalettePreviewer previewer;
-    private JColorChooser colorChooser = new JColorChooser();
-    private PaletteChooser paletteChooser;
+    private final PalettePreviewer previewer;
+    private final JColorChooser colorChooser = new JColorChooser();
+    private final PaletteChooser paletteChooser;
 
-    private JButton addColor = new JButton("Add Color");
-    private JButton removeColor = new JButton("Remove Color");
-    private JButton apply = new JButton("apply");
-    private JButton cancel = new JButton("Cancel");
+    private final JButton addColor = new JButton("Add Color");
+    private final JButton removeColor = new JButton("Remove Color");
+    private final JButton apply = new JButton("Apply");
+    private final JButton cancel = new JButton("Cancel");
+    private final JPanel optionPanel = new JPanel();
 
     //Methods
 
@@ -85,98 +84,83 @@ public class PaletteEditor extends JFrame {
         previewer.setBackground(new Color(150,150,150));
         add(previewer,gbc);
 
+        setupOptionPanel();
         gbc.insets = new Insets(0,0,0,0);
-        gbc.gridwidth = 1;
-        gbc.gridy = 3;
+        gbc.gridwidth = 4;
         gbc.gridx = 0;
-        addColor.setBackground(buttonColor);
-        add(addColor,gbc);
-        gbc.gridx++;
-        removeColor.setBackground(buttonColor);
-        add(removeColor,gbc);
-        gbc.gridx++;
-        apply.setBackground(buttonColor);
-        add(apply,gbc);
-        gbc.gridx++;
-        cancel.setBackground(buttonColor);
-        add(cancel,gbc);
+        gbc.gridy = 3;
+        add(optionPanel,gbc);
 
     }
 
     private void addListeners() {
 
-        addColor.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (colors.size() >= 20) {
-                    return;
-                }
+        addColor.addActionListener(e -> {
+            if (colors.size() >= 20) {
+                return;
+            }
 
-                JButton b = createColorButton(Color.white);
-                GridBagConstraints gbc = new GridBagConstraints();
-                gbc.gridx = paletteButtons.size()+1;
-                gbc.gridy = 0;
-                gbc.weightx = 1;
-                gbc.weighty = 1;
-                gbc.fill = BOTH;
+            JButton b = createColorButton(Color.white);
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = paletteButtons.size()+1;
+            gbc.gridy = 0;
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+            gbc.fill = BOTH;
 
-                buttonsPanel.add(b,gbc);
-                paletteButtons.add(b);
-                colors.add(Color.white);
+            buttonsPanel.add(b,gbc);
+            paletteButtons.add(b);
+            colors.add(Color.white);
 
-                update(getGraphics());
-                pack();
+            update(getGraphics());
+            pack();
 
+            selectedColorSlot = colors.size()-1;
+            colorChooser.setColor(Color.WHITE);
+            updatePreviewer();
+        });
+
+        removeColor.addActionListener(e -> {
+            if (colors.size() < 3) {
+                return;
+            }
+            colors.remove(selectedColorSlot);
+            buttonsPanel.remove(selectedColorSlot);
+            paletteButtons.remove(paletteButtons.get(selectedColorSlot));
+            update(getGraphics());
+            pack();
+
+            if (selectedColorSlot >= colors.size()) {
                 selectedColorSlot = colors.size()-1;
-                colorChooser.setColor(Color.WHITE);
-                updatePreviewer();
+                colorChooser.setColor(colors.get(colors.size() - 1));
+            } else {
+                colorChooser.setColor(colors.get(selectedColorSlot));
             }
+            updatePreviewer();
         });
 
-        removeColor.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (colors.size() < 3) {
-                    return;
-                }
-                colors.remove(selectedColorSlot);
-                buttonsPanel.remove(selectedColorSlot);
-                paletteButtons.remove(paletteButtons.get(selectedColorSlot));
-                update(getGraphics());
-                pack();
-
-                if (selectedColorSlot >= colors.size()) {
-                    selectedColorSlot = colors.size()-1;
-                    colorChooser.setColor(colors.get(colors.size() - 1));
-                } else {
-                    colorChooser.setColor(colors.get(selectedColorSlot));
-                }
-                updatePreviewer();
-            }
+        colorChooser.getSelectionModel().addChangeListener(e -> {
+            Color c = colorChooser.getColor();
+            setColorIcon(paletteButtons.get(selectedColorSlot), c);
+            colors.set(selectedColorSlot,c);
+            updatePreviewer();
         });
 
-        colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                Color c = colorChooser.getColor();
-                setColorIcon(paletteButtons.get(selectedColorSlot), c);
-                colors.set(selectedColorSlot,c);
-                updatePreviewer();
-            }
+        apply.addActionListener(e -> {
+            fire.setPalette(new Palette(colors));
+            close();
         });
 
-        apply.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fire.setPalette(new Palette(colors));
-                close();
-            }
+        cancel.addActionListener(e -> {
+            close();
+            fire.setPalette(originalPalette);
         });
 
-        cancel.addActionListener(new ActionListener() {
+        this.addWindowListener(new WindowAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                fire.setPalette(originalPalette);
             }
         });
 
@@ -192,12 +176,9 @@ public class PaletteEditor extends JFrame {
         setColorIcon(b,c);
         b.setBackground(buttonColor);
 
-        b.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedColorSlot = paletteButtons.indexOf(b);
-                colorChooser.setColor(colors.get(selectedColorSlot));
-            }
+        b.addActionListener(e -> {
+            selectedColorSlot = paletteButtons.indexOf(b);
+            colorChooser.setColor(colors.get(selectedColorSlot));
         });
 
         return b;
@@ -226,6 +207,26 @@ public class PaletteEditor extends JFrame {
         colorChooser.getChooserPanels()[0].getComponent(0).setEnabled(false);
     }
 
+    private void setupOptionPanel() {
+        optionPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = RELATIVE;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        gbc.fill = BOTH;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        addColor.setBackground(new Color(250,250,250));
+        optionPanel.add(addColor, gbc);
+        removeColor.setBackground(new Color(250,250,250));
+        optionPanel.add(removeColor, gbc);
+        apply.setBackground(new Color(250,250,250));
+        optionPanel.add(apply, gbc);
+        cancel.setBackground(new Color(250,250,250));
+        optionPanel.add(cancel, gbc);
+    }
+
     private void setupPaletteButtons() {
         buttonsPanel.setLayout(new GridBagLayout());
         for (Color c : fire.getPalette().getBaseColors()) {
@@ -237,7 +238,7 @@ public class PaletteEditor extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
-        gbc.gridheight = 2;
+        gbc.gridheight = 1;
         gbc.fill = BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
@@ -258,6 +259,207 @@ public class PaletteEditor extends JFrame {
         Palette p = new Palette(colors);
         previewer.setPalette(p);
         fire.setPalette(p);
+    }
+
+
+    //--------------------------------------------------------------------------------
+    //Inner Classes
+    //--------------------------------------------------------------------------------
+
+
+    public class PaletteChooser extends JPanel {
+
+
+        private PaletteSaver paletteSaver;
+        private final Fire fire;
+        private boolean adding = false;
+
+        private final JComboBox<String> paletteList = new JComboBox<>();
+        private final JButton add = new JButton("Add");
+        private final JButton remove = new JButton("Remove");
+        private final JTextField textField = new JTextField();
+
+        public PaletteChooser(Fire fire) {
+            this.fire = fire;
+            try {
+                importPalettes();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+            setLayout(new GridBagLayout());
+            addComponents();
+            addListeners();
+        }
+
+        private void addComponents() {
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.fill = BOTH;
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+
+            gbc.gridwidth = 2;
+            setupPaletteList();
+            add(paletteList, gbc);
+
+            gbc.gridwidth = 1;
+            gbc.gridy = 1;
+            add.setBackground(new Color(250, 250, 250));
+            add(add, gbc);
+
+            gbc.gridx = 1;
+            remove.setBackground(new Color(250, 250, 250));
+            add(remove, gbc);
+
+            gbc.gridy = 2;
+            gbc.gridx = 0;
+            gbc.gridwidth = 2;
+            textField.setEnabled(false);
+            add(textField, gbc);
+        }
+
+        private void addListeners() {
+
+            paletteList.addItemListener(e -> {
+                if (e.getStateChange() != ItemEvent.SELECTED) {
+                    return;
+                }
+                String selected = e.getItem().toString();
+                fire.setPalette(paletteSaver.get(selected));
+                close();
+            });
+
+            add.addActionListener(e -> {
+                if (adding) {
+                    setAdding(false);
+                    if (!textField.getText().isBlank()) {
+                        paletteList.addItem(textField.getText());
+                        paletteSaver.add(textField.getText(), fire.getPalette());
+                        textField.setText("");
+                    }
+                    paletteList.setEnabled(true);
+                } else {
+                    setAdding(true);
+                }
+            });
+
+            remove.addActionListener(e -> {
+                if (adding) {
+                    setAdding(false);
+                } else {
+                    new PaletteRemover(paletteSaver.getPaletteNames());
+                }
+            });
+
+        }
+
+        private void importPalettes() throws IOException {
+            String path = "src\\main\\resources\\palettes.json";
+            paletteSaver = new PaletteSaver(path);
+            while (!paletteSaver.exists()) {
+                paletteSaver.createJSON();
+            }
+
+        }
+
+        public void removePalette(int index) {
+            paletteList.removeItem(paletteList.getItemAt(index+1));
+            paletteSaver.remove(index);
+        }
+
+        public void setAdding(boolean b) {
+            if (adding) {
+                add.setText("Add");
+                remove.setText("Remove");
+            } else {
+                add.setText("Save");
+                remove.setText("Cancel");
+            }
+            adding = b;
+            paletteList.setEnabled(!b);
+            textField.setEnabled(b);
+        }
+
+        private void setupPaletteList() {
+            paletteList.setBackground(Color.white);
+            paletteList.addItem(" ");
+            for (String s : paletteSaver.getPaletteNames()) {
+                paletteList.addItem(s);
+            }
+        }
+
+
+        //--------------------------------------------------------------------------------
+        //Inner Classes
+        //--------------------------------------------------------------------------------
+
+
+        public class PaletteRemover extends JDialog {
+
+            ArrayList<String> paletteNames;
+
+            JButton remove = new JButton("Remove");
+            JButton cancel = new JButton("Cancel");
+            JList<String> list;
+
+            public PaletteRemover(ArrayList<String> paletteNames) {
+                this.paletteNames = paletteNames;
+                setLayout(new GridBagLayout());
+                addComponents();
+                addListeners();
+                setVisible(true);
+                pack();
+            }
+
+            private void addComponents() {
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.gridx = 0;
+                gbc.gridy = 0;
+                gbc.gridwidth = 2;
+                gbc.gridheight = 1;
+                gbc.weightx = 1;
+                gbc.weighty = 1;
+                gbc.fill = BOTH;
+
+                setupList();
+                add(list,gbc);
+
+                gbc.gridwidth = 1;
+                gbc.gridy = 1;
+                remove.setBackground(Color.white);
+                add(remove,gbc);
+
+                gbc.gridx = 1;
+                cancel.setBackground(Color.white);
+                add(cancel,gbc);
+
+            }
+
+            private void addListeners() {
+                remove.addActionListener(e -> {
+                    setVisible(false);
+                    dispose();
+                    removePalette(list.getSelectedIndex());
+                });
+
+                cancel.addActionListener(e -> {
+                    setVisible(false);
+                    dispose();
+                });
+            }
+
+            private void setupList() {
+                String[] names = paletteNames.toArray(new String[0]);
+                list = new JList<>(names);
+                list.setBackground(Color.lightGray);
+                list.setForeground(Color.darkGray);
+                list.setSelectionBackground(new Color(150,30,30));
+                list.setSelectionForeground(Color.white);
+            }
+
+        }
+
     }
 
 
