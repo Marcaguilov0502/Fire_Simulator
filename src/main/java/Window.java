@@ -10,6 +10,7 @@ public class Window extends JFrame {
     private Visualizer fireVisualizer;
     private Visualizer coolingMapVisualizer;
     private ControlPanel controlPanel;
+    private ExtendedControlPanel extendedControlPanel;
     private int width = 0, height = 0;
 
 
@@ -28,13 +29,14 @@ public class Window extends JFrame {
         }
     }
 
-    public void generateVisualizer(Fire img) {
-        fireVisualizer = new Visualizer(img);
-        this.width += img.width;
-        if (this.height < img.height) {
-            this.height = img.height;
+    public void generateVisualizer(Fire fire) {
+        fireVisualizer = new Visualizer(fire);
+        this.width += fire.width;
+        if (this.height < fire.height) {
+            this.height = fire.height;
         }
-        controlPanel = new ControlPanel((Fire) img);
+        controlPanel = new ControlPanel(fire);
+        extendedControlPanel = new ExtendedControlPanel(fire.getConfiguration());
     }
 
     public void launch() {
@@ -49,10 +51,15 @@ public class Window extends JFrame {
         getContentPane().add(fireVisualizer,gbc);
         gbc.weightx = 0;
         gbc.weighty = 0;
+        gbc.gridheight = 2;
         getContentPane().add(controlPanel, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.gridheight = 1;
+        getContentPane().add(extendedControlPanel,gbc);
         setVisible(true);
-        setSize(width+200+14, height+39);
-
+        setSize(width+200+14, height+120);
     }
 
     public void update() {

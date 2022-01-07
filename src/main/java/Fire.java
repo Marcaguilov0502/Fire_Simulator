@@ -10,7 +10,6 @@ public class Fire extends TImage {
 
 
     private final CoolingMap coolingMap;
-    private final Igniter igniter;
 
 
     //Constructor
@@ -19,7 +18,6 @@ public class Fire extends TImage {
     public Fire(int width, int height) {
         super(width, height);
         config = new Configuration();
-        igniter = new Igniter(config.getIgniterCount(), width);
         coolingMap = new CoolingMap(width, height, config);
     }
 
@@ -72,14 +70,14 @@ public class Fire extends TImage {
         }
     }
 
-    public void cool(float potency) {
+    public void cool(float power) {
 
         if (config.isUsingCoolingMap()) {
 
             for (int x = 0; x < height; x++) {
                 for (int y = 0; y < width; y++) {
 
-                    pixels[x][y] -= coolingMap.pixels[x][y] * (potency / 70f);
+                    pixels[x][y] -= coolingMap.pixels[x][y] * (power / 70f);
                     if (pixels[x][y] < 0) {
                         pixels[x][y] = 0;
                     }
@@ -101,8 +99,7 @@ public class Fire extends TImage {
 
             for (int x = 0; x < height; x++) {
                 for (int y = 0; y < width; y++) {
-                    pixels[x][y] *= 0.97f;
-                    pixels[x][y] -= 3;
+                    pixels[x][y] -= 3f/4f*power;
                     if (pixels[x][y] < 0) {
                         pixels[x][y] = 0;
                     }
@@ -110,6 +107,10 @@ public class Fire extends TImage {
                 }
             }
         }
+    }
+
+    public Configuration getConfiguration() {
+        return config;
     }
 
     public CoolingMap getCoolingMap() {
@@ -157,9 +158,9 @@ public class Fire extends TImage {
     }
 
     public void igniteMemory(int speed) {
-        igniter.update(config.getIgniterSpeed(), config.getIgniterMaxSize());
+        config.getIgniter().update(config.getIgniterSpeed(), config.getIgniterMaxSize());
         for (int x = height - speed; x < height; x++) {
-            pixels[x] = igniter.getPixels();
+            pixels[x] = config.getIgniter().getPixels();
         }
     }
 

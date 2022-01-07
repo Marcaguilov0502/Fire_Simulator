@@ -163,6 +163,9 @@ public class Palette {
     }
 
     public int getColor(int temperature) {
+        if (temperature > 255) {
+            return colors[255];
+        }
         return colors[temperature];
     }
 

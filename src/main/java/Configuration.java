@@ -1,18 +1,20 @@
 public class Configuration {
 
+    private final Igniter igniter = new Igniter(120, 500);
+
     public static final int FLAT = 0, RANDOM_GENERATED = 1, IMPORTED = 2;
     public static final int LINE = 0, RANDOM = 1, MEMORY = 2;
 
     private int speed = 5;
     private float ignitionDensity = 10f;
-    private float coolingPower = 4f;
+    private float coolingPower = 10f;
     private float igniterMaxSize = 30f;
     private float igniterSpeed = 40f;
     private int igniterCount = 120;
-    private int igniterType;
-    private int coolingType;
+    private int igniterType = MEMORY;
+    private int coolingType = FLAT;
     private int coolingPath;
-    private boolean usingCoolingMap = true;
+    private boolean usingCoolingMap = false;
 
     public int getSpeed() {
         return speed;
@@ -59,7 +61,18 @@ public class Configuration {
     }
 
     public void setIgniterCount(int igniterCount) {
+        int dif = this.igniterCount - igniterCount;
+        if (dif < 0) {
+            igniter.addSparks(dif*(-1));
+        } else if (dif > 0) {
+            igniter.removeSparks(dif);
+        }
+
         this.igniterCount = igniterCount;
+    }
+
+    public Igniter getIgniter() {
+        return igniter;
     }
 
     public int getIgniterType() {

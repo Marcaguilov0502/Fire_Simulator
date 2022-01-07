@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.Stack;
 
 public class Igniter {
 
@@ -7,7 +8,7 @@ public class Igniter {
 
 
     private int[] pixels;
-    private float[][] ignitions;
+    private Stack<float[]> ignitions;
 
 
     // Constructor
@@ -15,7 +16,8 @@ public class Igniter {
 
     public Igniter(int igniterCount, int fireWidth) {
         this.pixels = new int[fireWidth];
-        this.ignitions = new float[igniterCount][2];
+        this.ignitions = new Stack<>();
+        addSparks(igniterCount);
         centerIgnitions();
     }
 
@@ -23,22 +25,28 @@ public class Igniter {
     // Methods
 
 
-    public void attractToCenter(float speed) {
-        float center = (pixels.length/2f);
-        for (int i = 0; i < ignitions.length; i++) {
-            float relativeDistanceFromCenter = (((ignitions[i][0] - center)/center));
-            ignitions[i][0] -= relativeDistanceFromCenter*((new Random().nextFloat())*(speed/90f));
-            //ignitions[i][1] += (1f-relativeDistanceFromCenter)*1.5f;
-            if (ignitions[i][1] < 0) {ignitions[i][1]=0;}
+    public synchronized void addSparks(int number) {
+        for (int i = 0; i < number; i++) {
+            ignitions.push(new float[]{pixels.length/2f,150f});
         }
     }
 
-    public void centerIgnitions() {
-        float positionIncrement = ((float)pixels.length)/((float) ignitions.length);
+    public synchronized void attractToCenter(float speed) {
+        float center = (pixels.length/2f);
+        for (int i = 0; i < ignitions.size(); i++) {
+            float relativeDistanceFromCenter = (((ignitions.get(i)[0] - center)/center));
+            ignitions.get(i)[0] -= relativeDistanceFromCenter*((new Random().nextFloat())*(speed/90f));
+            //ignitions[i][1] += (1f-relativeDistanceFromCenter)*1.5f;
+            if (ignitions.get(i)[1] < 0) {ignitions.get(i)[1] = 0;}
+        }
+    }
+
+    public synchronized void centerIgnitions() {
+        float positionIncrement = ((float)pixels.length)/((float) ignitions.size());
         float position = positionIncrement;
-        for (int x = 0; x < ignitions.length; x++) {
-            ignitions[x][0] = position;
-            ignitions[x][1] = (new Random().nextFloat())*255;
+        for (int x = 0; x < ignitions.size(); x++) {
+            ignitions.get(x)[0] = position;
+            ignitions.get(x)[1] = (new Random().nextFloat())*255;
             position += positionIncrement;
         }
     }
@@ -47,49 +55,55 @@ public class Igniter {
         return pixels;
     }
 
-    public void move(float speed) {
+    public synchronized void move(float speed) {
         int relativeSpeed = (int) ((pixels.length/2)*(speed/1500));
         Random r = new Random();
-        for (int i = 0; i < ignitions.length; i++) {
+        for (int i = 0; i < ignitions.size(); i++) {
             int min = -relativeSpeed;
             int max = relativeSpeed;
-            ignitions[i][0] += r.nextInt((max-min)+1)+min;
-            if (ignitions[i][0] < 0) {
-                ignitions[i][0] = 0;}
-            if (ignitions[i][0] >= pixels.length) {
-                ignitions[i][0] = pixels.length-1;}
+            ignitions.get(i)[0] += r.nextInt((max-min)+1)+min;
+            if (ignitions.get(i)[0] < 0) {
+                ignitions.get(i)[0] = 0;}
+            if (ignitions.get(i)[0] >= pixels.length) {
+                ignitions.get(i)[0] = pixels.length-1;}
         }
     }
 
-    public void spread(float maxSize) {
+    public synchronized void removeSparks(int number) {
+        for (int i = 0;  i++<number && ignitions.size() > 0;) {
+            ignitions.pop();
+        }
+    }
+
+    public synchronized void spread(float maxSize) {
         pixels = new int[pixels.length];
         Random r = new Random();
 
-        for (int i = 0; i < ignitions.length; i++) {
+        for (int i = 0; i < ignitions.size(); i++) {
 
-            float size = maxSize*(ignitions[i][1]/255f);
+            float size = maxSize*(ignitions.get(i)[1]/255f);
             int ignitionLength = (int) ((pixels.length/2f)*(size/100f));
             float multiplierDecrement = 1f/ignitionLength;
 
-            ignitions[i][1] += r.nextInt(41)-22;
-            if (ignitions[i][1] < 0) {
-                ignitions[i][1] = 0;}
-            if (ignitions[i][1] > 255) {
-                ignitions[i][1] = 255;}
+            ignitions.get(i)[1] += r.nextInt(41)-22;
+            if (ignitions.get(i)[1] < 0) {
+                ignitions.get(i)[1] = 0;}
+            if (ignitions.get(i)[1] > 255) {
+                ignitions.get(i)[1] = 255;}
 
             float multiplier = 1 - multiplierDecrement;
-            pixels[(int) ignitions[i][0]] = (int) ignitions[i][1];
+            pixels[(int) ignitions.get(i)[0]] = (int) ignitions.get(i)[1];
 
             for (int j = 0; j < ignitionLength; j++) {
-                if (ignitions[i][0] - j > 0) {
-                    pixels[(int) (ignitions[i][0] - j)] += (int) (ignitions[i][1]*multiplier*(r.nextFloat()+0.5f));
-                    if (pixels[(int) (ignitions[i][0] - j)] > 255) {pixels[(int) (ignitions[i][0] - j)] = 255-r.nextInt(200);}
-                    if (pixels[(int) (ignitions[i][0] - j)] < 0) {pixels[(int) (ignitions[i][0] - j)] = 0;}
+                if (ignitions.get(i)[0] - j > 0) {
+                    pixels[(int) (ignitions.get(i)[0] - j)] += (int) (ignitions.get(i)[1]*multiplier*(r.nextFloat()+0.5f));
+                    if (pixels[(int) (ignitions.get(i)[0] - j)] > 255) {pixels[(int) (ignitions.get(i)[0] - j)] = 255-r.nextInt(200);}
+                    if (pixels[(int) (ignitions.get(i)[0] - j)] < 0) {pixels[(int) (ignitions.get(i)[0] - j)] = 0;}
                 }
-                if (ignitions[i][0] + j < pixels.length) {
-                    pixels[(int) (ignitions[i][0] + j)] += (int) (ignitions[i][1]*multiplier*(r.nextFloat()+0.5f));
-                    if (pixels[(int) (ignitions[i][0] + j)] > 255) {pixels[(int) (ignitions[i][0] + j)] = 255-r.nextInt(200);}
-                    if (pixels[(int) (ignitions[i][0] + j)] < 0) {pixels[(int) (ignitions[i][0] + j)] = 0;}
+                if (ignitions.get(i)[0] + j < pixels.length) {
+                    pixels[(int) (ignitions.get(i)[0] + j)] += (int) (ignitions.get(i)[1]*multiplier*(r.nextFloat()+0.5f));
+                    if (pixels[(int) (ignitions.get(i)[0] + j)] > 255) {pixels[(int) (ignitions.get(i)[0] + j)] = 255-r.nextInt(200);}
+                    if (pixels[(int) (ignitions.get(i)[0] + j)] < 0) {pixels[(int) (ignitions.get(i)[0] + j)] = 0;}
                 }
                 multiplier -= multiplierDecrement;
             }
