@@ -30,7 +30,7 @@ public class Fire extends TImage {
         ignite(config.getSpeed(), config.getIgnitionDensity());
         convection(config.getSpeed());
         blur();
-        cool(config.getCoolingPower());
+        cool(config.getCoolingPower()*(0.5f+(new Random().nextFloat())));
         updateImage();
     }
 

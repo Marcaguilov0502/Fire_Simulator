@@ -3,19 +3,20 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 
-import static java.awt.GridBagConstraints.CENTER;
-import static java.awt.GridBagConstraints.NONE;
+import static java.awt.GridBagConstraints.*;
 
 public class ControlPanel extends JPanel {
 
     private final Color backgroundColor = new Color(20,20,20);
     private final Fire fire;
     private final Configuration config;
+    private final ExtendedControlPanel extendedControlPanel;
 
     public ControlPanel(Fire fire) {
         super();
         this.fire = fire;
         this.config = fire.getConfiguration();
+        extendedControlPanel = new ExtendedControlPanel(config);
         this.setBackground(backgroundColor);
         this.setLayout(new GridBagLayout());
         addContents();
@@ -23,15 +24,13 @@ public class ControlPanel extends JPanel {
         addListeners();
     }
 
-    private final JLabel sliderLabel = new JLabel("Oxygen");
-    private final JSlider slider = new JSlider(JSlider.VERTICAL, 1,100,50);
+    private final ExtendedControlPanel.LabeledJSlider oxygen = new ExtendedControlPanel.LabeledJSlider("Oxygen", new JSlider(JSlider.VERTICAL, 1,100,50));
 
     private final JButton igniterType = new JButton("Igniter: Memory");
     private final JButton coolingType = new JButton("Cooling: Flat");
     private final JButton importedCoolingMap = new JButton("Cooling Map: 0");
     private final JButton palette = new JButton("Edit Palette");
-    private final JButton export = new JButton("Export");
-    private final JLabel expandInfo = new JLabel("(Press E to Expand)");
+    private final JButton expand = new JButton("Show More");
 
     private void adaptColors() {
 
@@ -65,8 +64,8 @@ public class ControlPanel extends JPanel {
         palette.setBackground(buttonColors[3]);
         palette.setForeground(buttonTextColors[3]);
 
-        export.setBackground(buttonColors[4]);
-        export.setForeground(buttonTextColors[4]);
+        expand.setBackground(buttonColors[4]);
+        expand.setForeground(buttonTextColors[4]);
 
     }
 
@@ -77,50 +76,41 @@ public class ControlPanel extends JPanel {
         gbc.weightx = 1;
         gbc.weighty = 1;
         gbc.insets = new Insets(5,5,5,5);
-        gbc.fill = GridBagConstraints.BOTH;
-
-        sliderLabel.setForeground(Color.white);
-        add(sliderLabel,gbc);
-
-        gbc.weightx = 1;
-        gbc.weighty = 1;
-        gbc.gridy = 1;
-        gbc.gridheight = 4;
-        slider.setBackground(backgroundColor);
-        add(slider,gbc);
-        gbc.gridheight = 1;
+        gbc.gridheight = 5;
+        gbc.fill = BOTH;
+        oxygen.getSlider().setBackground(backgroundColor);
+        oxygen.setBackground(backgroundColor);
+        add(oxygen,gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 0;
+        gbc.gridheight = 1;
         add(igniterType,gbc);
 
         gbc.gridy = 1;
         add(coolingType,gbc);
 
         gbc.gridy = 2;
-        importedCoolingMap.setEnabled(false);
         add(importedCoolingMap,gbc);
 
         gbc.gridy = 3;
         add(palette,gbc);
 
         gbc.gridy = 4;
-        add(export,gbc);
+        add(expand,gbc);
 
-        gbc.gridy = 5;
-        gbc.gridx = 0;
-        gbc.gridwidth = 2;
-        gbc.anchor = CENTER;
-        gbc.fill = NONE;
-        expandInfo.setForeground(new Color(130,130,130));
-        add(expandInfo,gbc);
     }
 
     private void addListeners() {
 
-        slider.addChangeListener(e -> {
-            int oxygen = slider.getValue();
-            config.setOxygen(oxygen);
+        oxygen.getSlider().addChangeListener(e -> {
+            int value = oxygen.getSlider().getValue();
+            config.setOxygen(value);
+
+            extendedControlPanel.getCoolingPower().getSlider().setValue((int) (config.getCoolingPower()*5));
+            extendedControlPanel.getIgniterSpeed().getSlider().setValue((int) config.getIgniterSpeed());
+            extendedControlPanel.getIgnitionDensity().getSlider().setValue((int) (config.getIgnitionDensity()));
+            extendedControlPanel.getIgniterMaxSize().getSlider().setValue((int) (config.getIgniterMaxSize()));
+
         });
 
         igniterType.addActionListener(e -> {
@@ -128,10 +118,28 @@ public class ControlPanel extends JPanel {
             int actualType = config.getIgniterType();
             if (actualType == Configuration.LINE) {
                 igniterType.setText("Igniter: Line");
+                extendedControlPanel.getIgniterCount().getSpinner().setEnabled(false);
+                extendedControlPanel.getIgniterSpeed().getSlider().setEnabled(false);
+                extendedControlPanel.getIgniterMaxSize().getSlider().setEnabled(false);
+                extendedControlPanel.getIgniterCount().getLabel().setForeground(new Color(150,150,150));
+                extendedControlPanel.getIgniterSpeed().getLabel().setForeground(new Color(150,150,150));
+                extendedControlPanel.getIgniterMaxSize().getLabel().setForeground(new Color(150,150,150));
             } else if (actualType == Configuration.RANDOM) {
                 igniterType.setText("Igniter: Random");
+                extendedControlPanel.getIgniterCount().getSpinner().setEnabled(false);
+                extendedControlPanel.getIgniterSpeed().getSlider().setEnabled(false);
+                extendedControlPanel.getIgniterMaxSize().getSlider().setEnabled(false);
+                extendedControlPanel.getIgniterCount().getLabel().setForeground(new Color(150,150,150));
+                extendedControlPanel.getIgniterSpeed().getLabel().setForeground(new Color(150,150,150));
+                extendedControlPanel.getIgniterMaxSize().getLabel().setForeground(new Color(150,150,150));
             } else if (actualType == Configuration.MEMORY) {
                 igniterType.setText("Igniter: Memory");
+                extendedControlPanel.getIgniterCount().getSpinner().setEnabled(true);
+                extendedControlPanel.getIgniterSpeed().getSlider().setEnabled(true);
+                extendedControlPanel.getIgniterMaxSize().getSlider().setEnabled(true);
+                extendedControlPanel.getIgniterCount().getLabel().setForeground(Color.white);
+                extendedControlPanel.getIgniterSpeed().getLabel().setForeground(Color.white);
+                extendedControlPanel.getIgniterMaxSize().getLabel().setForeground(Color.white);
             }
         });
 
@@ -177,8 +185,19 @@ public class ControlPanel extends JPanel {
             }
         });
 
+        expand.addActionListener(e -> {
+            if (extendedControlPanel.isVisible()) {
+                expand.setText("Show More");
+                extendedControlPanel.setVisible(false);
+            } else {
+                expand.setText("Show Less");
+                extendedControlPanel.setVisible(true);
+            }
+        });
+    }
 
-
+    public ExtendedControlPanel getExtendedControlPanel() {
+        return extendedControlPanel;
     }
 
 }

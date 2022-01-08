@@ -1,4 +1,6 @@
 import javax.imageio.ImageIO;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +23,7 @@ public class Main {
     }
 
     public static void runFire(Window window, Fire fire) throws InterruptedException, IOException {
-    fire.setPalette(new Palette(PreparedPalettes.FIRE_OPAQUE));
+        fire.setPalette(new Palette(PreparedPalettes.FIRE_OPAQUE));
         if (fire.getCoolingMap() != null) {
             window.generateVisualizer((CoolingMap) fire.getCoolingMap());
         }

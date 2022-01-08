@@ -115,7 +115,9 @@ public class PaletteEditor extends JFrame {
             update(getGraphics());
             pack();
 
+            paletteButtons.get(selectedColorSlot).setBackground(buttonColor);
             selectedColorSlot = colors.size()-1;
+            paletteButtons.get(selectedColorSlot).setBackground(new Color(200,200,200));
             colorChooser.setColor(Color.WHITE);
             updatePreviewer();
         });
@@ -132,9 +134,11 @@ public class PaletteEditor extends JFrame {
 
             if (selectedColorSlot >= colors.size()) {
                 selectedColorSlot = colors.size()-1;
+                paletteButtons.get(selectedColorSlot).setBackground(new Color(200,200,200));
                 colorChooser.setColor(colors.get(colors.size() - 1));
             } else {
                 colorChooser.setColor(colors.get(selectedColorSlot));
+                paletteButtons.get(selectedColorSlot).setBackground(new Color(200,200,200));
             }
             updatePreviewer();
         });
@@ -177,7 +181,9 @@ public class PaletteEditor extends JFrame {
         b.setBackground(buttonColor);
 
         b.addActionListener(e -> {
+            paletteButtons.get(selectedColorSlot).setBackground(buttonColor);
             selectedColorSlot = paletteButtons.indexOf(b);
+            paletteButtons.get(selectedColorSlot).setBackground(new Color(200,200,200));
             colorChooser.setColor(colors.get(selectedColorSlot));
         });
 
@@ -217,13 +223,13 @@ public class PaletteEditor extends JFrame {
         gbc.fill = BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
-        addColor.setBackground(new Color(250,250,250));
+        addColor.setBackground(buttonColor);
         optionPanel.add(addColor, gbc);
-        removeColor.setBackground(new Color(250,250,250));
+        removeColor.setBackground(buttonColor);
         optionPanel.add(removeColor, gbc);
-        apply.setBackground(new Color(250,250,250));
+        apply.setBackground(buttonColor);
         optionPanel.add(apply, gbc);
-        cancel.setBackground(new Color(250,250,250));
+        cancel.setBackground(buttonColor);
         optionPanel.add(cancel, gbc);
     }
 
@@ -234,6 +240,8 @@ public class PaletteEditor extends JFrame {
             JButton b = createColorButton(c);
             paletteButtons.add(b);
         }
+        selectedColorSlot = paletteButtons.size()-1;
+        paletteButtons.get(selectedColorSlot).setBackground(new Color(200,200,200));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;

@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
 
 import static java.awt.GridBagConstraints.BOTH;
 import static java.awt.GridBagConstraints.RELATIVE;
@@ -10,7 +9,6 @@ public class Window extends JFrame {
     private Visualizer fireVisualizer;
     private Visualizer coolingMapVisualizer;
     private ControlPanel controlPanel;
-    private ExtendedControlPanel extendedControlPanel;
     private int width = 0, height = 0;
 
 
@@ -36,7 +34,6 @@ public class Window extends JFrame {
             this.height = fire.height;
         }
         controlPanel = new ControlPanel(fire);
-        extendedControlPanel = new ExtendedControlPanel(fire.getConfiguration());
     }
 
     public void launch() {
@@ -57,9 +54,9 @@ public class Window extends JFrame {
         gbc.gridy = 1;
         gbc.gridwidth = 2;
         gbc.gridheight = 1;
-        getContentPane().add(extendedControlPanel,gbc);
+        getContentPane().add(controlPanel.getExtendedControlPanel(),gbc);
         setVisible(true);
-        setSize(width+200+14, height+120);
+        setSize(width+200+14, height+170);
     }
 
     public void update() {

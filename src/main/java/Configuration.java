@@ -119,9 +119,10 @@ public class Configuration {
     }
 
     public void setOxygen(int oxygen) {
-        igniterMaxSize = oxygen / 5f * 3f;
+        igniterMaxSize = 5 + (oxygen / 5f * 2.5f);
         igniterSpeed = oxygen / 5f + 10;
         ignitionDensity = oxygen / 5f;
+        coolingPower = 12.5f - (oxygen/20f);
     }
 
 
