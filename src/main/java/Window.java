@@ -56,7 +56,9 @@ public class Window extends JFrame {
         gbc.gridheight = 1;
         getContentPane().add(controlPanel.getExtendedControlPanel(),gbc);
         setVisible(true);
-        setSize(width+200+14, height+170);
+        fireVisualizer.setSize(500,500);
+        coolingMapVisualizer.setSize(500,500);
+        pack();
     }
 
     public void update() {

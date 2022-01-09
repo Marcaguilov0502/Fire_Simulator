@@ -30,7 +30,7 @@ public class ControlPanel extends JPanel {
     private final JButton coolingType = new JButton("Cooling: Flat");
     private final JButton importedCoolingMap = new JButton("Cooling Map: 0");
     private final JButton palette = new JButton("Edit Palette");
-    private final JButton expand = new JButton("Show More");
+    private final JButton export = new JButton("Export");
 
     private void adaptColors() {
 
@@ -64,8 +64,8 @@ public class ControlPanel extends JPanel {
         palette.setBackground(buttonColors[3]);
         palette.setForeground(buttonTextColors[3]);
 
-        expand.setBackground(buttonColors[4]);
-        expand.setForeground(buttonTextColors[4]);
+        export.setBackground(buttonColors[4]);
+        export.setForeground(buttonTextColors[4]);
 
     }
 
@@ -96,7 +96,7 @@ public class ControlPanel extends JPanel {
         add(palette,gbc);
 
         gbc.gridy = 4;
-        add(expand,gbc);
+        add(export,gbc);
 
     }
 
@@ -185,14 +185,11 @@ public class ControlPanel extends JPanel {
             }
         });
 
-        expand.addActionListener(e -> {
-            if (extendedControlPanel.isVisible()) {
-                expand.setText("Show More");
-                extendedControlPanel.setVisible(false);
-            } else {
-                expand.setText("Show Less");
-                extendedControlPanel.setVisible(true);
-            }
+        export.addActionListener(e -> {
+            GifExporter ge = new GifExporter(fire);
+            ge.setVisible(true);
+            ge.setLocation(900,400);
+            ge.pack();
         });
     }
 

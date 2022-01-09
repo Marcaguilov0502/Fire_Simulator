@@ -14,7 +14,6 @@ public class CoolingMap extends TImage {
     public CoolingMap(int width, int height, Configuration config) {
         super(width, height);
         this.config = config;
-        //generateNoisyCoolingMap(10, 7);
     }
 
 

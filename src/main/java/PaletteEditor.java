@@ -260,6 +260,7 @@ public class PaletteEditor extends JFrame {
     public void open() {
         setSize(500,500);
         setVisible(true);
+        setLocation(300,100);
         pack();
     }
 
